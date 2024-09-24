@@ -23,6 +23,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid relayState value' }, { status: 400 });
     }
 
+    // Dodaj walidację dla nowego pomiaru
+    if (typeof data.newMeasurement !== 'number') {
+      console.error('Invalid newMeasurement value:', data.newMeasurement);
+      return NextResponse.json({ error: 'Invalid newMeasurement value' }, { status: 400 });
+    }
+
     const newData = new DataModel(data);
     await newData.save();
 
@@ -32,8 +38,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Error saving data' }, { status: 500 });
   }
 }
-
-
 
 export async function GET() {
   try {
@@ -47,4 +51,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 }
-

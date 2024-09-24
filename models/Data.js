@@ -9,6 +9,10 @@ const dataSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  newMeasurement: { // Nowy pomiar
+    type: Number,
+    required: true,
+  },
 }, { timestamps: true });
 
 const DataModel = mongoose.models.Data || mongoose.model('Data', dataSchema);

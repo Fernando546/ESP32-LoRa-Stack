@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 type Data = {
   soilMoisture: number;
   relayState: number;
+  newMeasurement: number; // Nowa właściwość
   createdAt: string;
 };
 
@@ -16,6 +17,7 @@ const HomePage = () => {
   const [data, setData] = useState<Data | null>(null);
   const [instruction, setInstruction] = useState<string>('');
   const [moistureThreshold, setMoistureThreshold] = useState<number>(50); // Domyślna wartość progu wilgotności
+  const [isMeasuring, setIsMeasuring] = useState<boolean>(false); // Stan do śledzenia pomiaru
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +28,7 @@ const HomePage = () => {
         }
 
         const { latestData } = await response.json();
-        setData(latestData);
+        setData(latestData); // Upewnij się, że latestData zawiera newMeasurement
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -68,9 +70,27 @@ const HomePage = () => {
     } catch (error) {
       console.error('Error updating threshold:', error);
     }
-};
-  
-  
+  };
+
+  const handleMeasure = async () => {
+    setIsMeasuring(true); // Ustawienie stanu pomiaru na true
+    try {
+      const response = await fetch('/api/measure', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to trigger measurement');
+      }
+
+      // Opcjonalnie: Odśwież dane po wykonaniu pomiaru
+      await fetchData();
+    } catch (error) {
+      console.error('Error triggering measurement:', error);
+    } finally {
+      setIsMeasuring(false); // Przywrócenie stanu pomiaru
+    }
+  };
 
   if (!data) {
     return (
@@ -90,7 +110,7 @@ const HomePage = () => {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">Set Moisture Threshold</h2>
+        <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">Ustaw próg wilgotności</h2>
         <form onSubmit={handleThresholdSubmit} className="flex flex-col items-center">
           <input
             type="range"
@@ -101,12 +121,23 @@ const HomePage = () => {
             className="w-full mb-4"
           />
           <p className="text-lg font-semibold">Current Threshold: {moistureThreshold}%</p>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">Set Threshold</button>
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">Ustaw Próg</button>
         </form>
-        <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">Current Instruction: {instruction}</h2>
+        <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">Aktualny próg: {data.newMeasurement !== undefined ? `${data.newMeasurement}%` : 'N/A'}</h2>
+        <button 
+          onClick={handleMeasure} 
+          disabled={isMeasuring} 
+          className={`bg-green-500 text-white px-4 py-2 rounded-lg ${isMeasuring ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isMeasuring ? 'Measuring...' : 'Pomiar'}
+        </button>
       </div>
     </div>
   );
 };
 
 export default HomePage;
+function fetchData() {
+  throw new Error('Function not implemented.');
+}
+
