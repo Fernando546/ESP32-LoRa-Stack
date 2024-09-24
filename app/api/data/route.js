@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 import DataModel from '../../../models/Data';
-import connectToDatabase from '../../../lib/mongodb'; // Import funkcji z lib
+import connectToDatabase from '../../../lib/mongodb'; 
 
 export const dynamic = 'force-dynamic';
 
@@ -39,10 +39,9 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    const past48Results = await DataModel.find().sort({ createdAt: -1 }).limit(48);
-    const latestData = past48Results.length > 0 ? past48Results[0] : null;
+    const latestData = await DataModel.findOne().sort({ createdAt: -1 }).lean();
 
-    return NextResponse.json({ latestData, past48Results });
+    return NextResponse.json({ latestData });
   } catch (error) {
     console.error('Error fetching data:', error);
     return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });

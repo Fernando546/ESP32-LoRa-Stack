@@ -8,15 +8,19 @@ type Data = {
   createdAt: string;
 };
 
+type Instruction = {
+  action: string;
+};
+
 const HomePage = () => {
   const [data, setData] = useState<Data | null>(null);
+  const [instruction, setInstruction] = useState<string>('');
+  const [moistureThreshold, setMoistureThreshold] = useState<number>(50); // Domyślna wartość progu wilgotności
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('/api/data');
-
-        // Sprawdzenie, czy odpowiedź jest poprawna
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -28,8 +32,45 @@ const HomePage = () => {
       }
     };
 
+    const fetchInstruction = async () => {
+      try {
+        const response = await fetch('/api/instructions');
+        if (!response.ok) {
+          throw new Error('Failed to fetch instructions');
+        }
+
+        const { instruction } = await response.json();
+        setInstruction(instruction.action);
+      } catch (error) {
+        console.error('Error fetching instruction:', error);
+      }
+    };
+
     fetchData();
+    fetchInstruction();
   }, []);
+
+  const handleThresholdSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    try {
+      const response = await fetch('/api/instructions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: moistureThreshold }), // Przesyłanie wartości jako liczby
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update instruction');
+      }
+  
+      setInstruction(`Threshold set to ${moistureThreshold}%`);
+    } catch (error) {
+      console.error('Error updating threshold:', error);
+    }
+};
+  
+  
 
   if (!data) {
     return (
@@ -46,6 +87,23 @@ const HomePage = () => {
         <p className="text-xl text-gray-800">Soil Moisture: <span className="font-semibold">{data.soilMoisture}%</span></p>
         <p className="text-xl text-gray-800">Relay State: <span className={`font-semibold ${data.relayState === 1 ? 'text-red-500' : 'text-green-500'}`}>{data.relayState === 1 ? 'ON' : 'OFF'}</span></p>
         <p className="text-sm text-gray-600">Timestamp: {new Date(data.createdAt).toLocaleString()}</p>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">Set Moisture Threshold</h2>
+        <form onSubmit={handleThresholdSubmit} className="flex flex-col items-center">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={moistureThreshold}
+            onChange={(e) => setMoistureThreshold(Number(e.target.value))}
+            className="w-full mb-4"
+          />
+          <p className="text-lg font-semibold">Current Threshold: {moistureThreshold}%</p>
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">Set Threshold</button>
+        </form>
+        <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">Current Instruction: {instruction}</h2>
       </div>
     </div>
   );
