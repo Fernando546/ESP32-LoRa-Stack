@@ -3,12 +3,19 @@ import connectToDatabase from '@/lib/mongodb';
 import MeasureRequest from '@/models/MeasureRequest';
 
 export async function GET() {
-  const { db } = await connectToDatabase();
-  
-  const latestInstruction = await db.collection('instructions').findOne({}, { sort: { createdAt: -1 } });
+  try {
+    const { db } = await connectToDatabase();
+    const latestInstruction = await db.collection('instructions').findOne({}, { sort: { createdAt: -1 } });
 
-  // Upewnij się, że command jest liczbą
-  return NextResponse.json({ threshold: parseInt(latestInstruction.command, 10) });
+    if (!latestInstruction) {
+      return NextResponse.json({ error: 'No instructions found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ threshold: parseInt(latestInstruction.command, 10) });
+  } catch (error) {
+    console.error('Error fetching instructions:', error);
+    return NextResponse.json({ error: 'Failed to fetch instructions' }, { status: 500 });
+  }
 }
 
 export async function POST(req) {
