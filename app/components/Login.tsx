@@ -1,92 +1,65 @@
+// components/Login.tsx
+
 import { useState } from 'react';
-import { Button, TextField, Typography, Box, CircularProgress } from '@mui/material';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
-interface LoginProps {
-  onLoginSuccess: () => void;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // Dodaj nową właściwość
-}
+type LoginProps = {
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  closeDialog: () => void; // Dodanie prop `closeDialog`
+};
 
-const Login: React.FC<LoginProps> = ({ onLoginSuccess, setIsLoggedIn }) => {
+const Login: React.FC<LoginProps> = ({ setIsLoggedIn, closeDialog }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string>(''); 
-  const [isLoading, setIsLoading] = useState<boolean>(false); 
+  const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true); 
 
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+    // Logika logowania
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Invalid username or password');
-      }
-
+    if (response.ok) {
       const { token } = await response.json();
-      localStorage.setItem('token', token); 
-      setIsLoggedIn(true); // Ustaw isLoggedIn na true po udanym logowaniu
-      onLoginSuccess(); 
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError('Something went wrong'); 
-      }
-    } finally {
-      setIsLoading(false); 
+      localStorage.setItem('token', token);
+      setIsLoggedIn(true);
+      closeDialog(); // Zamknij dialog po udanym logowaniu
+    } else {
+      setError('Invalid username or password');
     }
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleLogin}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        mt: 4,
-        bgcolor: 'background.default',
-        borderRadius: 1,
-        p: 2,
-        boxShadow: 3,
-      }}
-    >
-      {error && (
-        <Typography color="error" sx={{ mb: 1 }}>
-          {error}
-        </Typography>
-      )}
+    <form onSubmit={handleLogin}>
       <TextField
-        label="Nazwa użytkownika"
+        label="Username"
         variant="outlined"
+        fullWidth
+        margin="normal"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        fullWidth
-        margin="normal"
-        sx={{ bgcolor: 'background.paper' }}
       />
       <TextField
-        label="Hasło"
+        label="Password"
         type="password"
         variant="outlined"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
         fullWidth
         margin="normal"
-        sx={{ bgcolor: 'background.paper' }}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
-      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }} disabled={isLoading}>
-        {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Zaloguj'}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <Button type="submit" variant="contained" color="primary">
+        Login
       </Button>
-    </Box>
+    </form>
   );
 };
 

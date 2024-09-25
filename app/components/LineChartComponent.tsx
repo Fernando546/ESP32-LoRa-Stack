@@ -1,4 +1,3 @@
-// LineChartComponent.tsx
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -34,15 +33,15 @@ const LineChartComponent = ({ historicalData }: LineChartComponentProps) => {
       labels: labels,
       datasets: [
         {
-          label: 'Soil Moisture (%)',
+          label: 'Wilgotność (%)',
           data: dataValues,
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: theme.palette.mode === 'light' ? 'black' : 'white', // Kolor linii
+          backgroundColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)', // Kolor tła
           fill: true,
         },
       ],
     });
-  }, [historicalData]);
+  }, [historicalData, theme.palette.mode]); // Dodano theme.palette.mode jako zależność
 
   if (!chartData) return null;
 

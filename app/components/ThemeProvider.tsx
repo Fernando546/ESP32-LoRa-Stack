@@ -1,32 +1,22 @@
 // components/ThemeProvider.tsx
-"use client"; // Upewnij się, że ten plik jest używany jako klient
-
-import { createTheme, ThemeProvider, CssBaseline, Button } from '@mui/material';
-import { useState, ReactNode } from 'react';
+import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import { ReactNode } from 'react';
 
 type ThemeProviderProps = {
-  children: ReactNode; // Typ dla children
+  children: ReactNode;
+  darkMode: boolean; // Dodaj prop dla darkMode
 };
 
-const ThemeProviderComponent = ({ children }: ThemeProviderProps) => {
-  const [darkMode, setDarkMode] = useState(false); // Domyślny tryb
-
+const ThemeProviderComponent = ({ children, darkMode }: ThemeProviderProps) => {
   const theme = createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
     },
   });
 
-  const toggleTheme = () => {
-    setDarkMode((prev) => !prev); // Przełącz tryb
-  };
-
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline /> {/* Resetuje stylowanie, aby uniknąć problemów z różnicami w przeglądarkach */}
-      <Button onClick={toggleTheme} variant="contained" color="primary" sx={{ mb: 2 }}>
-        {darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'} {/* Tekst przycisku */}
-      </Button>
+      <CssBaseline />
       {children}
     </ThemeProvider>
   );
