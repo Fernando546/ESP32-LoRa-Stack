@@ -1,12 +1,20 @@
 import { useState } from 'react';
+import { Button, TextField, Typography, Box, CircularProgress } from '@mui/material';
 
-const Login = ({ onLoginSuccess }: { onLoginSuccess: () => void }) => {
+interface LoginProps {
+  onLoginSuccess: () => void;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // Dodaj nową właściwość
+}
+
+const Login: React.FC<LoginProps> = ({ onLoginSuccess, setIsLoggedIn }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string>(''); // Określenie typu jako string
+  const [error, setError] = useState<string>(''); 
+  const [isLoading, setIsLoading] = useState<boolean>(false); 
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true); 
 
     try {
       const response = await fetch('/api/login', {
@@ -22,36 +30,63 @@ const Login = ({ onLoginSuccess }: { onLoginSuccess: () => void }) => {
       }
 
       const { token } = await response.json();
-      localStorage.setItem('token', token); // Przechowaj token w localStorage
-      onLoginSuccess(); // Wywołaj funkcję callback po pomyślnym zalogowaniu
-    } catch (error: unknown) { // Określenie typu jako unknown
+      localStorage.setItem('token', token); 
+      setIsLoggedIn(true); // Ustaw isLoggedIn na true po udanym logowaniu
+      onLoginSuccess(); 
+    } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message); // Użyj message, jeśli error jest instancją Error
+        setError(error.message);
       } else {
-        setError('Something went wrong'); // W przypadku innego typu błędu
+        setError('Something went wrong'); 
       }
+    } finally {
+      setIsLoading(false); 
     }
   };
 
   return (
-    <form onSubmit={handleLogin} className="mt-4 flex flex-col items-center">
-      {error && <p className="text-red-500">{error}</p>}
-      <input
-        type="text"
-        placeholder="Nazwa użytkownika"
+    <Box
+      component="form"
+      onSubmit={handleLogin}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        mt: 4,
+        bgcolor: 'background.default',
+        borderRadius: 1,
+        p: 2,
+        boxShadow: 3,
+      }}
+    >
+      {error && (
+        <Typography color="error" sx={{ mb: 1 }}>
+          {error}
+        </Typography>
+      )}
+      <TextField
+        label="Nazwa użytkownika"
+        variant="outlined"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        className="border rounded mb-2 p-2"
+        fullWidth
+        margin="normal"
+        sx={{ bgcolor: 'background.paper' }}
       />
-      <input
+      <TextField
+        label="Hasło"
         type="password"
-        placeholder="Hasło"
+        variant="outlined"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border rounded mb-2 p-2"
+        fullWidth
+        margin="normal"
+        sx={{ bgcolor: 'background.paper' }}
       />
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">Zaloguj</button>
-    </form>
+      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }} disabled={isLoading}>
+        {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Zaloguj'}
+      </Button>
+    </Box>
   );
 };
 

@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 import DataModel from '../../../models/Data';
 import connectToDatabase from '../../../lib/mongodb'; 
@@ -23,7 +22,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid relayState value' }, { status: 400 });
     }
 
-    // Dodaj walidację dla nowego pomiaru
+    // Opcjonalnie: Dodaj walidację dla nowego pomiaru, jeśli jest używany
     if (typeof data.newMeasurement !== 'number') {
       console.error('Invalid newMeasurement value:', data.newMeasurement);
       return NextResponse.json({ error: 'Invalid newMeasurement value' }, { status: 400 });
@@ -34,7 +33,7 @@ export async function POST(request) {
 
     return NextResponse.json('Data saved successfully');
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error saving data:', error);
     return NextResponse.json({ error: 'Error saving data' }, { status: 500 });
   }
 }
@@ -43,9 +42,19 @@ export async function GET() {
   try {
     await connectToDatabase();
 
+    // Pobranie ostatniego rekordu
     const latestData = await DataModel.findOne().sort({ createdAt: -1 }).lean();
 
-    return NextResponse.json({ latestData });
+    // Obliczenie czasu sprzed 24 godzin
+    const last24h = new Date();
+    last24h.setHours(last24h.getHours() - 24);
+
+    // Pobranie wszystkich danych z ostatnich 24 godzin
+    const last24HoursData = await DataModel.find({
+      createdAt: { $gte: last24h },
+    }).sort({ createdAt: 1 }).lean();
+
+    return NextResponse.json({ latestData, last24HoursData });
   } catch (error) {
     console.error('Error fetching data:', error);
     return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });

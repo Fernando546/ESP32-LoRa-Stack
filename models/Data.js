@@ -9,7 +9,7 @@ const dataSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  newMeasurement: { // Nowy pomiar
+  newMeasurement: { 
     type: Number,
     required: true,
   },

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import MeasureRequest from '@/models/MeasureRequest';
 
 export async function GET() {
   try {
