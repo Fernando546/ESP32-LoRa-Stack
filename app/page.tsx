@@ -242,31 +242,40 @@ const HomePage = () => {
               {isMeasuring ? 'Mierzenie...' : 'Pomiar'}
           </Button>
         </div>
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-center mb-3">Nowy próg wilgotności</h2>
-          <form onSubmit={handleThresholdSubmit} className="flex flex-col items-center">
-            <Slider
-              aria-label="Moisture Threshold"
-              defaultValue={moistureThreshold}
-              valueLabelDisplay="auto"
-              step={5}
-              marks
-              min={0}
-              max={100}
-              onChange={(e, newValue) => setMoistureThreshold(newValue as number)}
-              disabled={!isLoggedIn} // Wygaszenie slidera
-              style={{ color: darkMode ? 'white' : 'black' }} // Ustaw kolor slidera w zależności od trybu
-            />
-            <h2 className="text-l text-center mb-3">Aktualny próg wilgotności: {fetchedThreshold}%</h2>
-            <Button type="submit" variant="contained" disabled={!isLoggedIn} className={`px-4 py-2 rounded-lg ${!isLoggedIn ? 'opacity-50 cursor-not-allowed' : ''}`} style={{
-              backgroundColor: darkMode ? 'lightgray' : '#444', // Ustaw kolor tła w zależności od trybu
-              color: darkMode ? 'black' : 'white', // Ustaw kolor tekstu w zależności od trybu
-            }}
-            >
-              Ustaw próg
-            </Button>
-          </form>
-        </div>
+        <div className="mt-8 flex justify-center items-center flex-col">
+  <h2 className="text-xl font-semibold text-center mb-3">Nowy próg wilgotności</h2>
+  <form 
+    onSubmit={handleThresholdSubmit} 
+    className="flex flex-col items-center max-w-md w-full" // Dodałem w-full do formy
+  >
+    <Slider
+      aria-label="Moisture Threshold"
+      defaultValue={moistureThreshold}
+      valueLabelDisplay="auto"
+      step={5}
+      marks
+      min={0}
+      max={100}
+      onChange={(e, newValue) => setMoistureThreshold(newValue as number)}
+      disabled={!isLoggedIn} // Wygaszenie slidera
+      style={{ color: darkMode ? 'white' : 'black' }} // Ustaw kolor slidera w zależności od trybu
+    />
+    <h2 className="text-l text-center mb-3">Aktualny próg wilgotności: {fetchedThreshold}%</h2>
+    <Button 
+      type="submit" 
+      variant="contained" 
+      disabled={!isLoggedIn} 
+      className={`px-4 py-2 rounded-lg ${!isLoggedIn ? 'opacity-50 cursor-not-allowed' : ''}`} 
+      style={{
+        backgroundColor: darkMode ? 'lightgray' : '#444', // Ustaw kolor tła w zależności od trybu
+        color: darkMode ? 'black' : 'white', // Ustaw kolor tekstu w zależności od trybu
+      }}
+    >
+      Ustaw próg
+    </Button>
+  </form>
+</div>
+
         <div className='mt-10'>
           <h2 className="text-xl font-semibold text-center mb-2 ">Pomiary z ostatnich 24 godzin</h2>
           <LineChartComponent historicalData={historicalData} />
